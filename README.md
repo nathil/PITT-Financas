@@ -1,5 +1,7 @@
 # PITT Finanças — Chatbot WhatsApp de Organização Financeira (MVP)
 
+<img width="1126" height="564" alt="Frame 18 (2)" src="https://github.com/user-attachments/assets/fecf4c6a-53bc-473e-be6b-94b983e87e66" />
+
 Chatbot de WhatsApp construído em **Node.js + TypeScript**, com banco **SQLite + Prisma**, geração de planilhas **Excel (`.xlsx`)** via `ExcelJS` e geração de **Tabelas e Dashboards Executivos (`.png`)** via `Playwright + Chart.js`.
 
 Inclui **controle de acesso exclusivo para usuários Testers** por número de telefone (`STRICT_TESTER_ONLY=true`), ignorando silenciosamente mensagens vindas de números não autorizados.
