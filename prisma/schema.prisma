@@ -1,0 +1,108 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                    String               @id @default(cuid())
+  phone                 String               @unique
+  name                  String?
+  isTester              Boolean              @default(true)
+  currentBalance        Float                @default(0) // Saldo em contas correntes, carteiras e dinheiro vivo
+  emergencyGoalMonths   Int                  @default(6) // Ex: 6 meses do custo de vida
+  emergencyReserveTotal Float                @default(0) // Montante acumulado na Reserva de Emergência
+  createdAt             DateTime             @default(now())
+  transactions          Transaction[]
+  fixedExpenses         FixedExpense[]
+  loans                 Loan[]
+  budgets               CategoryBudget[]
+  session               ConversationSession?
+}
+
+model ConversationSession {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  state     String   @default("MAIN_MENU")
+  payload   String   @default("{}")
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type               String   // "EXPENSE" | "INCOME" | "INVESTMENT"
+  category           String
+  description        String?
+  amount             Float
+  isInstallment      Boolean  @default(false)
+  installmentNumber  Int?
+  totalInstallments  Int?
+  installmentGroupId String?
+  competenceMonth    String   // "YYYY-MM"
+  occurredAt         DateTime @default(now())
+}
+
+model FixedExpense {
+  id                String                @id @default(cuid())
+  userId            String
+  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category          String                // 9 categorias (inclui Reserva de Emergência)
+  description       String
+  amount            Float                 // Valor mensal da despesa/parcela
+  isInstallment     Boolean               @default(false)
+  totalInstallments Int?
+  remainingMonths   Int?
+  startMonth        String                // "YYYY-MM"
+  active            Boolean               @default(true)
+  payments          FixedExpensePayment[]
+}
+
+model FixedExpensePayment {
+  id              String       @id @default(cuid())
+  fixedExpenseId  String
+  fixedExpense    FixedExpense @relation(fields: [fixedExpenseId], references: [id], onDelete: Cascade)
+  competenceMonth String       // "YYYY-MM"
+  amountPaid      Float
+  paidAt          DateTime     @default(now())
+}
+
+model Loan {
+  id                String        @id @default(cuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  personName        String
+  totalAmount       Float
+  paidAmount        Float         @default(0)
+  isInstallment     Boolean       @default(false)
+  totalInstallments Int?
+  startMonth        String        // "YYYY-MM"
+  status            String        @default("OPEN") // "OPEN" | "PAID"
+  createdAt         DateTime      @default(now())
+  payments          LoanPayment[]
+}
+
+model LoanPayment {
+  id              String   @id @default(cuid())
+  loanId          String
+  loan            Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  amount          Float
+  competenceMonth String   // "YYYY-MM"
+  paidAt          DateTime @default(now())
+}
+
+model CategoryBudget {
+  id              String @id @default(cuid())
+  userId          String
+  user            User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        String
+  competenceMonth String
+  budgetedAmount  Float
+
+  @@unique([userId, category, competenceMonth])
+}

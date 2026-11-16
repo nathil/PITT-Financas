@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.runtime/
+.env
+*.db
+*.db-journal
+auth_info_baileys/
+generated_reports/
